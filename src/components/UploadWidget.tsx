@@ -27,12 +27,12 @@ export function UploadWidget() {
 
   const validateAndSetFile = (selectedFile: File) => {
     if (!selectedFile.name.endsWith(".xlsx")) {
-      setErrorMsg("Invalid file type. Please upload an .xlsx file.");
+      setErrorMsg("Format d'arxiu invàlid. Si us plau, puja un arxiu .xlsx.");
       setState("error");
       return;
     }
     if (selectedFile.size > 10 * 1024 * 1024) {
-      setErrorMsg("File is too large. Maximum size is 10MB.");
+      setErrorMsg("L'arxiu és massa gran. La mida màxima és de 10MB.");
       setState("error");
       return;
     }
@@ -111,9 +111,9 @@ export function UploadWidget() {
         try {
           errorData = await response.json();
         } catch (e) {
-          errorData = { detail: "An unexpected error occurred during generation." };
+          errorData = { detail: "Hi ha hagut un error inesperat durant la generació." };
         }
-        setErrorMsg(errorData.detail || "Failed to generate calendar.");
+        setErrorMsg(errorData.detail || "No s'ha pogut generar el calendari.");
         setState("error");
         return;
       }
@@ -144,7 +144,7 @@ export function UploadWidget() {
       triggerConfetti();
 
     } catch (error) {
-      setErrorMsg("A network error occurred. Please try again.");
+      setErrorMsg("Hi ha hagut un error de xarxa. Torna-ho a provar.");
       setState("error");
     }
   };
@@ -158,7 +158,7 @@ export function UploadWidget() {
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto">
+    <div className="w-full max-w-md mx-auto">
       <AnimatePresence mode="wait">
         
         {/* IDLE / DRAG STATE */}
@@ -170,7 +170,7 @@ export function UploadWidget() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3 }}
             className={cn(
-              "relative group flex flex-col items-center justify-center w-full h-72 border-2 border-dashed rounded-3xl transition-all duration-300 ease-in-out glass-panel",
+              "relative group flex flex-col items-center justify-center w-full h-56 border-2 border-dashed rounded-3xl transition-all duration-300 ease-in-out glass-panel",
               isDragging ? "border-primary bg-primary/5 scale-[1.02]" : "border-border hover:border-primary/50 hover:bg-muted/30"
             )}
             onDragOver={handleDragOver}
@@ -190,9 +190,9 @@ export function UploadWidget() {
               <UploadCloud className="w-10 h-10" />
             </div>
             
-            <h3 className="text-xl font-semibold mb-2">Upload Excel File</h3>
+            <h3 className="text-xl font-semibold mb-2">Puja l'arxiu Excel</h3>
             <p className="text-muted-foreground text-sm text-center max-w-[260px]">
-              Drag and drop your patient visits <br/> .xlsx file here, or click to browse
+              Arrossega i deixa anar l'arxiu .xlsx <br/> de visites aquí, o fes clic per buscar-lo
             </p>
           </motion.div>
         )}
@@ -227,12 +227,12 @@ export function UploadWidget() {
 
             <motion.button
               whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={{ scale: 0.9, rotate: -2 }}
               onClick={generateCalendar}
               className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-blue-600 text-primary-foreground font-semibold text-lg shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
             >
-              <CalendarRange className="w-5 h-5" />
-              Generate Calendar
+              <UploadCloud className="w-5 h-5" />
+              Puja fitxer
             </motion.button>
           </motion.div>
         )}
@@ -244,7 +244,7 @@ export function UploadWidget() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center h-64 glass-panel rounded-3xl gap-6"
+            className="flex flex-col items-center justify-center h-56 glass-panel rounded-3xl gap-6"
           >
             <motion.div 
               animate={{ rotate: 360 }}
@@ -254,8 +254,8 @@ export function UploadWidget() {
               <Loader2 className="w-10 h-10" />
             </motion.div>
             <div className="text-center">
-              <h3 className="text-xl font-semibold mb-1">Processing...</h3>
-              <p className="text-muted-foreground text-sm">Reading data and generating events</p>
+              <h3 className="text-xl font-semibold mb-1">Processant...</h3>
+              <p className="text-muted-foreground text-sm">Llegint les dades i generant els esdeveniments</p>
             </div>
             
             <div className="w-48 h-2 bg-secondary rounded-full overflow-hidden">
@@ -276,7 +276,7 @@ export function UploadWidget() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center h-72 glass-panel rounded-3xl gap-6 text-center px-6"
+            className="flex flex-col items-center justify-center h-56 glass-panel rounded-3xl gap-4 text-center px-6"
           >
             <motion.div 
               initial={{ scale: 0 }}
@@ -287,8 +287,8 @@ export function UploadWidget() {
               <CheckCircle2 className="w-12 h-12" />
             </motion.div>
             <div>
-              <h3 className="text-2xl font-bold mb-2">Calendar Generated!</h3>
-              <p className="text-muted-foreground">Your .ics file has been downloaded automatically.</p>
+              <h3 className="text-2xl font-bold mb-2">Calendari generat!</h3>
+              <p className="text-muted-foreground text-sm">Ja el tens descarregat. Ara a curar pacients i a prendre un bon cafè, que t'ho mereixes! ☕💪</p>
             </div>
             
             <motion.button
@@ -298,7 +298,7 @@ export function UploadWidget() {
               className="px-6 py-3 rounded-xl bg-secondary text-secondary-foreground font-medium flex items-center gap-2 hover:bg-secondary/80 transition-colors"
             >
               <RefreshCcw className="w-4 h-4" />
-              Process another file
+              Processar un altre arxiu
             </motion.button>
           </motion.div>
         )}
@@ -310,13 +310,13 @@ export function UploadWidget() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="flex flex-col items-center justify-center h-72 glass-panel border-destructive/20 rounded-3xl gap-6 text-center px-6"
+            className="flex flex-col items-center justify-center h-56 glass-panel border-destructive/20 rounded-3xl gap-6 text-center px-6"
           >
             <div className="p-4 bg-destructive/10 text-destructive rounded-full">
               <AlertCircle className="w-12 h-12" />
             </div>
             <div>
-              <h3 className="text-xl font-bold mb-2">Something went wrong</h3>
+              <h3 className="text-xl font-bold mb-2">Alguna cosa ha fallat</h3>
               <p className="text-muted-foreground text-sm max-w-[280px] mx-auto">{errorMsg}</p>
             </div>
             
@@ -326,7 +326,7 @@ export function UploadWidget() {
               onClick={clearSelection}
               className="px-6 py-3 rounded-xl bg-destructive text-destructive-foreground font-medium hover:bg-destructive/90 transition-colors"
             >
-              Try Again
+              Torna-ho a provar
             </motion.button>
           </motion.div>
         )}
