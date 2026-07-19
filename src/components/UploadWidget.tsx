@@ -37,8 +37,8 @@ export function UploadWidget() {
       return;
     }
     setFile(selectedFile);
-    setState("selected");
     setErrorMsg("");
+    generateCalendar(selectedFile);
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -92,13 +92,14 @@ export function UploadWidget() {
     frame();
   };
 
-  const generateCalendar = async () => {
-    if (!file) return;
+  const generateCalendar = async (fileToUpload?: File | React.MouseEvent) => {
+    const targetFile = fileToUpload instanceof File ? fileToUpload : file;
+    if (!targetFile) return;
     
     setState("uploading");
     
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", targetFile);
 
     try {
       const response = await fetch("/api/generate", {
@@ -186,56 +187,22 @@ export function UploadWidget() {
               className="hidden"
             />
             
-            <div className="p-4 rounded-full bg-primary/10 text-primary mb-4 group-hover:scale-110 transition-transform duration-300">
-              <UploadCloud className="w-10 h-10" />
-            </div>
+            <motion.div
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95, rotate: -2 }}
+              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-primary to-blue-600 text-primary-foreground font-semibold text-lg shadow-lg shadow-primary/25 flex items-center justify-center gap-2 mb-4"
+            >
+              <UploadCloud className="w-6 h-6" />
+              Puja fitxer
+            </motion.div>
             
-            <h3 className="text-xl font-semibold mb-2">Puja l'arxiu Excel</h3>
             <p className="text-muted-foreground text-sm text-center max-w-[260px]">
-              Arrossega i deixa anar l'arxiu .xlsx <br/> de visites aquí, o fes clic per buscar-lo
+              o arrossega l'arxiu .xlsx aquí
             </p>
           </motion.div>
         )}
 
-        {/* SELECTED STATE */}
-        {state === "selected" && file && (
-          <motion.div
-            key="selected"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="flex flex-col gap-6"
-          >
-            <div className="glass-panel rounded-3xl p-6 flex items-center justify-between">
-              <div className="flex items-center gap-4 overflow-hidden">
-                <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl shrink-0">
-                  <FileSpreadsheet className="w-8 h-8" />
-                </div>
-                <div className="truncate">
-                  <p className="font-semibold text-lg truncate">{file.name}</p>
-                  <p className="text-muted-foreground text-sm">{formatFileSize(file.size)}</p>
-                </div>
-              </div>
-              <button 
-                onClick={clearSelection}
-                className="p-2 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded-full transition-colors shrink-0"
-                aria-label="Remove file"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            <motion.button
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.9, rotate: -2 }}
-              onClick={generateCalendar}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-blue-600 text-primary-foreground font-semibold text-lg shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
-            >
-              <UploadCloud className="w-5 h-5" />
-              Puja fitxer
-            </motion.button>
-          </motion.div>
-        )}
 
         {/* UPLOADING STATE */}
         {state === "uploading" && (

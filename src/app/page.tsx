@@ -1,4 +1,4 @@
-import { ThemeToggle } from "@/components/ThemeToggle";
+
 import { UploadWidget } from "@/components/UploadWidget";
 import { Heart } from "lucide-react";
 
@@ -9,10 +9,6 @@ export default function Home() {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/20 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Header */}
-      <header className="w-full flex items-center justify-end p-4 max-w-4xl mx-auto z-10">
-        <ThemeToggle />
-      </header>
 
       {/* Hero Section & Widget */}
       <div className="flex-1 flex flex-col items-center justify-center p-4 z-10 w-full max-w-3xl mx-auto">
