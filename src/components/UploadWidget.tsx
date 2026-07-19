@@ -1,0 +1,337 @@
+"use client";
+
+import React, { useState, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { UploadCloud, FileSpreadsheet, X, CheckCircle2, AlertCircle, Loader2, CalendarRange, Download, RefreshCcw } from "lucide-react";
+import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
+
+type AppState = "idle" | "selected" | "uploading" | "success" | "error";
+
+export function UploadWidget() {
+  const [state, setState] = useState<AppState>("idle");
+  const [file, setFile] = useState<File | null>(null);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const validateAndSetFile = (selectedFile: File) => {
+    if (!selectedFile.name.endsWith(".xlsx")) {
+      setErrorMsg("Invalid file type. Please upload an .xlsx file.");
+      setState("error");
+      return;
+    }
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      setErrorMsg("File is too large. Maximum size is 10MB.");
+      setState("error");
+      return;
+    }
+    setFile(selectedFile);
+    setState("selected");
+    setErrorMsg("");
+  };
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      validateAndSetFile(e.dataTransfer.files[0]);
+    }
+  }, []);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      validateAndSetFile(e.target.files[0]);
+    }
+  };
+
+  const clearSelection = () => {
+    setFile(null);
+    setState("idle");
+    setErrorMsg("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const triggerConfetti = () => {
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ["#3b82f6", "#10b981", "#ffffff"]
+      });
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ["#3b82f6", "#10b981", "#ffffff"]
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    frame();
+  };
+
+  const generateCalendar = async () => {
+    if (!file) return;
+    
+    setState("uploading");
+    
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          errorData = { detail: "An unexpected error occurred during generation." };
+        }
+        setErrorMsg(errorData.detail || "Failed to generate calendar.");
+        setState("error");
+        return;
+      }
+
+      // Handle download
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      
+      // Get filename from Content-Disposition if available, else default
+      let filename = "visitas_pacientes.ics";
+      const disposition = response.headers.get("Content-Disposition");
+      if (disposition && disposition.indexOf("filename=") !== -1) {
+        const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+        if (matches != null && matches[1]) { 
+          filename = matches[1].replace(/['"]/g, "");
+        }
+      }
+
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+
+      setState("success");
+      triggerConfetti();
+
+    } catch (error) {
+      setErrorMsg("A network error occurred. Please try again.");
+      setState("error");
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  return (
+    <div className="w-full max-w-xl mx-auto">
+      <AnimatePresence mode="wait">
+        
+        {/* IDLE / DRAG STATE */}
+        {state === "idle" && (
+          <motion.div
+            key="idle"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className={cn(
+              "relative group flex flex-col items-center justify-center w-full h-72 border-2 border-dashed rounded-3xl transition-all duration-300 ease-in-out glass-panel",
+              isDragging ? "border-primary bg-primary/5 scale-[1.02]" : "border-border hover:border-primary/50 hover:bg-muted/30"
+            )}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              accept=".xlsx"
+              className="hidden"
+            />
+            
+            <div className="p-4 rounded-full bg-primary/10 text-primary mb-4 group-hover:scale-110 transition-transform duration-300">
+              <UploadCloud className="w-10 h-10" />
+            </div>
+            
+            <h3 className="text-xl font-semibold mb-2">Upload Excel File</h3>
+            <p className="text-muted-foreground text-sm text-center max-w-[260px]">
+              Drag and drop your patient visits <br/> .xlsx file here, or click to browse
+            </p>
+          </motion.div>
+        )}
+
+        {/* SELECTED STATE */}
+        {state === "selected" && file && (
+          <motion.div
+            key="selected"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="flex flex-col gap-6"
+          >
+            <div className="glass-panel rounded-3xl p-6 flex items-center justify-between">
+              <div className="flex items-center gap-4 overflow-hidden">
+                <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl shrink-0">
+                  <FileSpreadsheet className="w-8 h-8" />
+                </div>
+                <div className="truncate">
+                  <p className="font-semibold text-lg truncate">{file.name}</p>
+                  <p className="text-muted-foreground text-sm">{formatFileSize(file.size)}</p>
+                </div>
+              </div>
+              <button 
+                onClick={clearSelection}
+                className="p-2 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded-full transition-colors shrink-0"
+                aria-label="Remove file"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={generateCalendar}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-blue-600 text-primary-foreground font-semibold text-lg shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
+            >
+              <CalendarRange className="w-5 h-5" />
+              Generate Calendar
+            </motion.button>
+          </motion.div>
+        )}
+
+        {/* UPLOADING STATE */}
+        {state === "uploading" && (
+          <motion.div
+            key="uploading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center h-64 glass-panel rounded-3xl gap-6"
+          >
+            <motion.div 
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+              className="p-4 bg-primary/10 text-primary rounded-full"
+            >
+              <Loader2 className="w-10 h-10" />
+            </motion.div>
+            <div className="text-center">
+              <h3 className="text-xl font-semibold mb-1">Processing...</h3>
+              <p className="text-muted-foreground text-sm">Reading data and generating events</p>
+            </div>
+            
+            <div className="w-48 h-2 bg-secondary rounded-full overflow-hidden">
+               <motion.div 
+                 initial={{ width: "0%" }}
+                 animate={{ width: "100%" }}
+                 transition={{ duration: 2, ease: "easeInOut" }}
+                 className="h-full bg-primary rounded-full"
+               />
+            </div>
+          </motion.div>
+        )}
+
+        {/* SUCCESS STATE */}
+        {state === "success" && (
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center h-72 glass-panel rounded-3xl gap-6 text-center px-6"
+          >
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", bounce: 0.5 }}
+              className="p-4 bg-emerald-500/10 text-emerald-500 rounded-full"
+            >
+              <CheckCircle2 className="w-12 h-12" />
+            </motion.div>
+            <div>
+              <h3 className="text-2xl font-bold mb-2">Calendar Generated!</h3>
+              <p className="text-muted-foreground">Your .ics file has been downloaded automatically.</p>
+            </div>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={clearSelection}
+              className="px-6 py-3 rounded-xl bg-secondary text-secondary-foreground font-medium flex items-center gap-2 hover:bg-secondary/80 transition-colors"
+            >
+              <RefreshCcw className="w-4 h-4" />
+              Process another file
+            </motion.button>
+          </motion.div>
+        )}
+
+        {/* ERROR STATE */}
+        {state === "error" && (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="flex flex-col items-center justify-center h-72 glass-panel border-destructive/20 rounded-3xl gap-6 text-center px-6"
+          >
+            <div className="p-4 bg-destructive/10 text-destructive rounded-full">
+              <AlertCircle className="w-12 h-12" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold mb-2">Something went wrong</h3>
+              <p className="text-muted-foreground text-sm max-w-[280px] mx-auto">{errorMsg}</p>
+            </div>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={clearSelection}
+              className="px-6 py-3 rounded-xl bg-destructive text-destructive-foreground font-medium hover:bg-destructive/90 transition-colors"
+            >
+              Try Again
+            </motion.button>
+          </motion.div>
+        )}
+
+      </AnimatePresence>
+    </div>
+  );
+}
