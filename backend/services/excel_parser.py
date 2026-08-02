@@ -13,13 +13,22 @@ class ExcelParserService:
         has_valid_data = False
 
         if len(rows) < settings.FILA_PACIENTES:
-            raise EmptyWorkbookException("The table doesn't have enough rows.")
+            raise EmptyWorkbookException(f"The table doesn't have enough rows. Got {len(rows)}, need {settings.FILA_PACIENTES}.")
 
         fila_pacientes_idx = settings.FILA_PACIENTES - 1
         paciente_row = rows[fila_pacientes_idx]
         
         col_inicio_idx = settings.COL_INICIO_PACIENTES - 1
         columnas_pacientes = []
+        
+        # DEBUG: log what we see
+        import sys
+        print(f"[DEBUG] Total rows: {len(rows)}", file=sys.stderr)
+        print(f"[DEBUG] fila_pacientes_idx: {fila_pacientes_idx}", file=sys.stderr)
+        print(f"[DEBUG] paciente_row (len={len(paciente_row)}): {paciente_row}", file=sys.stderr)
+        print(f"[DEBUG] col_inicio_idx: {col_inicio_idx}", file=sys.stderr)
+        for i, row in enumerate(rows[:5]):
+            print(f"[DEBUG] rows[{i}]: {row}", file=sys.stderr)
         
         for col_idx in range(col_inicio_idx, len(paciente_row)):
             valor = paciente_row[col_idx]
@@ -28,7 +37,8 @@ class ExcelParserService:
             columnas_pacientes.append((col_idx, str(valor).strip()))
         
         if not columnas_pacientes:
-            raise EmptyWorkbookException("No patient columns found in the table.")
+            raise EmptyWorkbookException(f"No patient columns found in the table. paciente_row={paciente_row}, col_inicio_idx={col_inicio_idx}")
+
 
         fila_inicio_visitas_idx = settings.FILA_INICIO_VISITAS - 1
         
