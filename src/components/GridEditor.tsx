@@ -112,6 +112,13 @@ export function GridEditor({ onGenerate }: GridEditorProps) {
   const compileData = () => {
     const rows: string[][] = [];
     
+    // Validate: at least one patient must have a reference date
+    const patientsWithDates = patients.filter(p => p.referenceDate.trim() !== "");
+    if (patientsWithDates.length === 0) {
+      alert("⚠️ Cal introduir almenys una Data de Referència per poder generar el calendari.\n\nIntrodueix la data base de cada pacient al camp que hi ha sota del nom del pacient.");
+      return;
+    }
+
     // Row 1 (idx 0): [ "Ensayo:", "STUDY NAME", ... ]
     const titleRow = Array(10).fill("");
     titleRow[0] = "Ensayo:";
@@ -268,12 +275,22 @@ export function GridEditor({ onGenerate }: GridEditorProps) {
                         </button>
                       </div>
                       <div className="w-full">
-                        <label className="text-[10px] text-muted-foreground/70 block mb-0.5">Data Referència (Base)</label>
+                        <label className={cn(
+                          "text-[10px] block mb-0.5 font-medium",
+                          p.referenceDate ? "text-primary/70" : "text-amber-500/80"
+                        )}>
+                          {p.referenceDate ? "Data Referència (Base)" : "⚠ Data Referència requerida"}
+                        </label>
                         <input
                           type="date"
                           value={p.referenceDate}
                           onChange={(e) => updateReferenceDate(p.id, e.target.value)}
-                          className="text-xs bg-muted/20 border border-border/50 rounded-md px-2 py-1 w-full focus:outline-none focus:border-primary text-foreground"
+                          className={cn(
+                            "text-xs border rounded-md px-2 py-1 w-full focus:outline-none focus:border-primary text-foreground",
+                            p.referenceDate
+                              ? "bg-muted/20 border-border/50"
+                              : "bg-amber-500/10 border-amber-500/50"
+                          )}
                         />
                       </div>
                     </div>
