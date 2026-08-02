@@ -109,32 +109,26 @@ export function GridEditor({ onGenerate }: GridEditorProps) {
     return format(resultDate, "yyyy-MM-dd");
   };
 
-  // Compile data into 2D array expected by ExcelParserService
   const compileData = () => {
     const rows: string[][] = [];
     
-    // Row 0: [ "", "", "", "Ensayo:", "STUDY NAME" ]
-    // We will place Ensayo at A1 so it's easier, but to be safe with config, let's just make it big enough
+    // Row 1 (idx 0): [ "Ensayo:", "STUDY NAME", ... ]
     const titleRow = Array(10).fill("");
     titleRow[0] = "Ensayo:";
     titleRow[1] = studyName;
     rows.push(titleRow);
 
-    // Row 1: Empty
-    rows.push([]);
-
-    // Row 2: Patient Numbers (index 2 / FILA_PACIENTES - 1 in config)
-    // config: COL_INICIO_PACIENTES = 3 (index 2)
+    // Row 2 (idx 1): Patient Numbers (matches FILA_PACIENTES = 2 in config)
     const patientRow = ["", ""];
     patients.forEach(p => patientRow.push(p.name));
     rows.push(patientRow);
 
-    // Row 3: Headers
+    // Row 3 (idx 2): Headers
     const headerRow = ["Visita", "Setmanes"];
     patients.forEach(p => headerRow.push(p.name));
     rows.push(headerRow);
 
-    // Row 4+ : Visits
+    // Row 4+ (idx 3+): Visits (matches FILA_INICIO_VISITAS = 4 in config)
     visits.forEach(v => {
       const vRow = [v.name, v.weeks];
       patients.forEach(p => {
