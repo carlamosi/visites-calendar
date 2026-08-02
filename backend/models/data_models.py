@@ -8,3 +8,10 @@ class CalendarEvent:
     fila: int
     nombre_visita: str
     fecha: date
+
+from pydantic import BaseModel
+from typing import List
+
+class TableData(BaseModel):
+    estudio: str
+    rows: List[List[str]]

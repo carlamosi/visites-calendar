@@ -8,6 +8,78 @@ from backend.utils.exceptions import InvalidFileException, EmptyWorkbookExceptio
 from backend.models.data_models import CalendarEvent
 
 class ExcelParserService:
+    def parse_2d_array(self, rows: List[List[str]], estudio: str) -> List[CalendarEvent]:
+        events = []
+        has_valid_data = False
+
+        if len(rows) < settings.FILA_PACIENTES:
+            raise EmptyWorkbookException("The table doesn't have enough rows.")
+
+        fila_pacientes_idx = settings.FILA_PACIENTES - 1
+        paciente_row = rows[fila_pacientes_idx]
+        
+        col_inicio_idx = settings.COL_INICIO_PACIENTES - 1
+        columnas_pacientes = []
+        
+        for col_idx in range(col_inicio_idx, len(paciente_row)):
+            valor = paciente_row[col_idx]
+            if valor is None or str(valor).strip() == "":
+                break
+            columnas_pacientes.append((col_idx, str(valor).strip()))
+        
+        if not columnas_pacientes:
+            raise EmptyWorkbookException("No patient columns found in the table.")
+
+        fila_inicio_visitas_idx = settings.FILA_INICIO_VISITAS - 1
+        
+        def parse_date(date_str: str) -> date:
+            date_str = date_str.strip()
+            # Try some common formats
+            for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%d-%m-%Y"):
+                try:
+                    return datetime.strptime(date_str, fmt).date()
+                except ValueError:
+                    pass
+            # if we get here, it might be something else
+            return None
+
+        for fila_idx in range(fila_inicio_visitas_idx, len(rows)):
+            row = rows[fila_idx]
+            if not row or len(row) == 0:
+                continue
+                
+            nombre_visita = row[0]
+            if nombre_visita is None or str(nombre_visita).strip() == "":
+                continue
+                
+            for col_idx, num_paciente in columnas_pacientes:
+                if col_idx < len(row):
+                    fecha_valor = row[col_idx]
+                    
+                    if fecha_valor is None or str(fecha_valor).strip() == "":
+                        continue
+                        
+                    parsed_date = parse_date(str(fecha_valor))
+                    if not parsed_date:
+                        continue
+                        
+                    has_valid_data = True
+                    
+                    events.append(
+                        CalendarEvent(
+                            estudio=estudio,
+                            num_paciente=num_paciente,
+                            fila=fila_idx + 1,
+                            nombre_visita=str(nombre_visita).strip(),
+                            fecha=parsed_date
+                        )
+                    )
+
+        if not has_valid_data and not events:
+            raise EmptyWorkbookException("The table contains no valid patient visits.")
+
+        return events
+
     def parse_excel_bytes(self, file_bytes: bytes) -> List[CalendarEvent]:
         """
         Parses the Excel file bytes into a list of CalendarEvent objects

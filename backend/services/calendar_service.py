@@ -13,3 +13,8 @@ class CalendarService:
         events = self.parser.parse_excel_bytes(file_bytes)
         ics_bytes = self.generator.generate_ics(events)
         return ics_bytes
+
+    def process_json_to_ics(self, rows: list, estudio: str) -> bytes:
+        events = self.parser.parse_2d_array(rows, estudio)
+        ics_bytes = self.generator.generate_ics(events)
+        return ics_bytes

@@ -5,6 +5,7 @@ from fastapi.responses import StreamingResponse
 from backend.utils.config import settings
 from backend.utils.exceptions import CalendarAppException
 from backend.services.calendar_service import CalendarService
+from backend.models.data_models import TableData
 
 router = APIRouter()
 calendar_service = CalendarService()
@@ -21,6 +22,21 @@ async def generate_calendar(file: UploadFile = File(...)):
         
     try:
         ics_bytes = calendar_service.process_excel_to_ics(file_bytes)
+        
+        # Create a StreamingResponse
+        response = StreamingResponse(io.BytesIO(ics_bytes), media_type="text/calendar")
+        response.headers["Content-Disposition"] = "attachment; filename=visitas_pacientes.ics"
+        return response
+        
+    except CalendarAppException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="An unexpected error occurred during processing.")
+
+@router.post("/generate-from-json")
+async def generate_calendar_from_json(data: TableData):
+    try:
+        ics_bytes = calendar_service.process_json_to_ics(data.rows, data.estudio)
         
         # Create a StreamingResponse
         response = StreamingResponse(io.BytesIO(ics_bytes), media_type="text/calendar")
