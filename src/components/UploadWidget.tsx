@@ -178,13 +178,13 @@ export function UploadWidget() {
             onClick={() => setInputMode("file")}
             className={cn("px-4 py-2 rounded-lg text-sm font-medium transition-colors", inputMode === "file" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground")}
           >
-            Pujar Arxiu
+            Puja fitxer
           </button>
           <button
             onClick={() => setInputMode("paste")}
             className={cn("px-4 py-2 rounded-lg text-sm font-medium transition-colors", inputMode === "paste" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground")}
           >
-            Enganxar Taula
+            Enganxa el calendari
           </button>
         </div>
       )}

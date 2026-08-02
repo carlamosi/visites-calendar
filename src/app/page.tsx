@@ -22,7 +22,7 @@ export default function Home() {
             Genera els calendaris <br className="hidden md:block"/> en un tres i no res.
           </h1>
           <p className="text-base md:text-lg text-muted-foreground font-medium">
-            Puja el teu fitxer d'Excel i obtindràs el calendari a l'instant. <br/> Gràcies per cuidar tan bé dels pacients cada dia! 💙
+            Puja el teu fitxer d'Excel o enganxa les dades del calendari i l'obtindràs a l'instant. <br/> Gràcies per cuidar tan bé dels pacients cada dia! 💙
           </p>
         </div>
 
