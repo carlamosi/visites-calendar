@@ -40,17 +40,17 @@ export function GridEditor({ onGenerate }: GridEditorProps) {
   ]);
 
   const [patients, setPatients] = useState<Patient[]>([
-    { id: "p1", name: "#01", referenceDate: "", manualDates: {} },
-    { id: "p2", name: "#02", referenceDate: "", manualDates: {} },
+    { id: "p1", name: "001", referenceDate: "", manualDates: {} },
+    { id: "p2", name: "002", referenceDate: "", manualDates: {} },
   ]);
 
   const [focusedCell, setFocusedCell] = useState<{rowId: string, colType: 'name'|'weeks'|'patient', patientId?: string} | null>(null);
 
   const addPatient = () => {
-    const newNum = (patients.length + 1).toString().padStart(2, "0");
+    const newNum = (patients.length + 1).toString().padStart(3, "0");
     setPatients([
       ...patients,
-      { id: `p${Date.now()}`, name: `#${newNum}`, referenceDate: "", manualDates: {} }
+      { id: `p${Date.now()}`, name: `${newNum}`, referenceDate: "", manualDates: {} }
     ]);
   };
 
