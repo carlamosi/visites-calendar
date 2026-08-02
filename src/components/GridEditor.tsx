@@ -148,7 +148,7 @@ export function GridEditor({ onGenerate }: GridEditorProps) {
 
   const handlePaste = (e: React.ClipboardEvent) => {
     if (!focusedCell) return;
-    const clipboardData = e.clipboardData.getData("Text");
+    const clipboardData = e.clipboardData.getData("text/plain") || e.clipboardData.getData("Text") || e.clipboardData.getData("text");
     if (!clipboardData) return;
     
     // Only intercept if there's multiple cells (tabs or newlines)
@@ -248,7 +248,7 @@ export function GridEditor({ onGenerate }: GridEditorProps) {
 
       <div className="w-full overflow-x-auto custom-scrollbar pb-4 -mx-2 px-2">
         <div className="min-w-max">
-          <table className="w-full border-separate border-spacing-x-2 border-spacing-y-1" onPaste={handlePaste}>
+          <table className="w-full border-separate border-spacing-x-2 border-spacing-y-1" onPasteCapture={handlePaste}>
             <thead>
               {/* Patient Headers */}
               <tr>
