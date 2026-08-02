@@ -11,7 +11,7 @@ export default function Home() {
 
 
       {/* Hero Section & Widget */}
-      <div className="flex-1 flex flex-col items-center justify-center p-4 z-10 w-full max-w-3xl mx-auto">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 z-10 w-full max-w-5xl mx-auto">
         <div className="text-center mb-8 max-w-xl mx-auto">
           <div className="flex items-center justify-center gap-2 mb-4 text-rose-500">
             <Heart className="w-6 h-6 fill-current animate-pulse" />
