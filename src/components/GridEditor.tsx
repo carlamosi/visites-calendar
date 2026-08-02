@@ -44,6 +44,8 @@ export function GridEditor({ onGenerate }: GridEditorProps) {
     { id: "p2", name: "#02", referenceDate: "", manualDates: {} },
   ]);
 
+  const [focusedCell, setFocusedCell] = useState<{rowId: string, colType: 'name'|'weeks'|'patient', patientId?: string} | null>(null);
+
   const addPatient = () => {
     const newNum = (patients.length + 1).toString().padStart(2, "0");
     setPatients([
@@ -144,6 +146,84 @@ export function GridEditor({ onGenerate }: GridEditorProps) {
     onGenerate({ estudio: studyName, rows });
   };
 
+  const handlePaste = (e: React.ClipboardEvent) => {
+    if (!focusedCell) return;
+    const clipboardData = e.clipboardData.getData("Text");
+    if (!clipboardData) return;
+    
+    // Only intercept if there's multiple cells (tabs or newlines)
+    if (!clipboardData.includes('\t') && !clipboardData.includes('\n')) {
+       return;
+    }
+    
+    e.preventDefault();
+    
+    const rows = clipboardData.split(/\r?\n/).filter(r => r.trim() !== "");
+    
+    const startRowIdx = visits.findIndex(v => v.id === focusedCell.rowId);
+    if (startRowIdx === -1) return;
+    
+    let currentVisits = [...visits];
+    let currentPatients = [...patients];
+    
+    rows.forEach((rowData, rowOffset) => {
+      const rowIdx = startRowIdx + rowOffset;
+      if (rowIdx >= currentVisits.length) {
+         currentVisits.push({ id: `v${Date.now()}_${rowOffset}`, name: "", weeks: "" });
+      }
+      
+      const v = currentVisits[rowIdx];
+      const cells = rowData.split('\t');
+      
+      let startColIdx = 0;
+      if (focusedCell.colType === 'weeks') startColIdx = 1;
+      else if (focusedCell.colType === 'patient') {
+        const pIdx = currentPatients.findIndex(p => p.id === focusedCell.patientId);
+        startColIdx = 2 + (pIdx > -1 ? pIdx : 0);
+      }
+      
+      cells.forEach((cellValue, cellIdx) => {
+        const targetColIdx = startColIdx + cellIdx;
+        const val = cellValue.trim();
+        
+        if (targetColIdx === 0) {
+          v.name = val;
+        } else if (targetColIdx === 1) {
+          v.weeks = val;
+        } else {
+          const pIdx = targetColIdx - 2;
+          while (pIdx >= currentPatients.length) {
+            const newNum = (currentPatients.length + 1).toString().padStart(2, "0");
+            currentPatients.push({ id: `p${Date.now()}_${pIdx}`, name: `#${newNum}`, referenceDate: "", manualDates: {} });
+          }
+          const p = currentPatients[pIdx];
+          
+          let finalDateStr = val;
+          if (val) {
+            // Check if it's DD/MM/YYYY or YYYY-MM-DD
+            const parts = val.split(/[\/\-]/);
+            if (parts.length === 3) {
+              if (parts[0].length <= 2 && parts[2].length === 4) {
+                 finalDateStr = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+              } else if (parts[0].length === 4) {
+                 finalDateStr = `${parts[0]}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
+              }
+            }
+          }
+          
+          if (finalDateStr) {
+             p.manualDates[v.id] = finalDateStr;
+          } else {
+             delete p.manualDates[v.id];
+          }
+        }
+      });
+    });
+    
+    setVisits(currentVisits);
+    setPatients(currentPatients);
+  };
+
   return (
     <div className="w-full flex flex-col gap-6 bg-background border border-border/50 rounded-2xl p-6 shadow-xl relative overflow-hidden">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border/20 pb-4">
@@ -168,7 +248,7 @@ export function GridEditor({ onGenerate }: GridEditorProps) {
 
       <div className="w-full overflow-x-auto custom-scrollbar pb-4 -mx-2 px-2">
         <div className="min-w-max">
-          <table className="w-full border-separate border-spacing-x-2 border-spacing-y-1">
+          <table className="w-full border-separate border-spacing-x-2 border-spacing-y-1" onPaste={handlePaste}>
             <thead>
               {/* Patient Headers */}
               <tr>
@@ -232,6 +312,7 @@ export function GridEditor({ onGenerate }: GridEditorProps) {
                       <input 
                         type="text"
                         value={v.name}
+                        onFocus={() => setFocusedCell({ rowId: v.id, colType: 'name' })}
                         onChange={(e) => updateVisit(v.id, "name", e.target.value)}
                         className="text-sm bg-muted/30 border border-transparent hover:border-border focus:border-primary focus:bg-background rounded-md px-2 py-1.5 w-full transition-all"
                         placeholder="Nom Visita"
@@ -242,6 +323,7 @@ export function GridEditor({ onGenerate }: GridEditorProps) {
                     <input 
                       type="number"
                       value={v.weeks}
+                      onFocus={() => setFocusedCell({ rowId: v.id, colType: 'weeks' })}
                       onChange={(e) => updateVisit(v.id, "weeks", e.target.value)}
                       className="text-sm text-center bg-muted/30 border border-transparent hover:border-border focus:border-primary focus:bg-background rounded-md px-2 py-1.5 w-full transition-all"
                       placeholder="0"
@@ -262,6 +344,7 @@ export function GridEditor({ onGenerate }: GridEditorProps) {
                           <input 
                             type="date"
                             value={computed}
+                            onFocus={() => setFocusedCell({ rowId: v.id, colType: 'patient', patientId: p.id })}
                             onChange={(e) => handleManualDateChange(p.id, v.id, e.target.value)}
                             className={cn(
                               "text-xs bg-transparent w-full px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary",
