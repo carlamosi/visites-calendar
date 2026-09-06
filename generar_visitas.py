@@ -102,7 +102,7 @@ def generar_calendario(ruta_excel, ruta_salida):
                 event.add('dtstamp', datetime.now())
                 event.add('uid', f"{estudio}-{num_paciente}-{fila}-{uuid.uuid4()}@visitas-pacientes")
                 # Outlook yellow category & colour index (6 = Yellow)
-                event.add('categories', ['Yellow category', 'Categoría amarilla', 'Yellow Category'])
+                event.add('categories', ['Yellow category', 'Categoría amarilla', 'Categoria groga', 'Yellow Category', 'Categoria Groga'])
                 event['X-MICROSOFT-CDO-ALLDAYEVENT'] = 'FALSE'
                 event['X-MICROSOFT-CDO-BUSYSTATUS'] = 'BUSY'
                 event['X-MICROSOFT-CDO-IMPORTANCE'] = '1'
