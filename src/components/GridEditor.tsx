@@ -238,13 +238,19 @@ export function GridEditor({ onGenerate }: GridEditorProps) {
             placeholder="Escriu el nom de l'assaig..."
           />
         </div>
-        <button 
-          onClick={compileData}
-          className="px-6 py-2 bg-gradient-to-r from-primary to-blue-600 text-primary-foreground font-semibold rounded-xl shadow-lg hover:shadow-primary/20 transition-all flex items-center gap-2"
-        >
-          <CalendarIcon className="w-4 h-4" />
-          Generar Calendari
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-600 dark:text-amber-400 text-xs font-medium">
+            <span className="w-2 h-2 rounded-full bg-amber-400 shadow-sm" />
+            Categoria groga Outlook
+          </div>
+          <button 
+            onClick={compileData}
+            className="px-6 py-2 bg-gradient-to-r from-primary to-blue-600 text-primary-foreground font-semibold rounded-xl shadow-lg hover:shadow-primary/20 transition-all flex items-center gap-2"
+          >
+            <CalendarIcon className="w-4 h-4" />
+            Generar Calendari
+          </button>
+        </div>
       </div>
 
       <div className="w-full overflow-x-auto custom-scrollbar pb-4 -mx-2 px-2">

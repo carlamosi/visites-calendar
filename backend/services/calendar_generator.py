@@ -30,11 +30,16 @@ class CalendarGeneratorService:
             event_ical.add('dtstamp', datetime.now())
             event_ical.add('uid', f"{ev.estudio}-{ev.num_paciente}-{ev.fila}-{uuid.uuid4()}@visitas-pacientes")
 
-            # Outlook yellow category
-            event_ical.add('categories', 'Yellow Category')
-            # Extra Outlook hint for the colour index (6 = Yellow)
-            event_ical['X-MICROSOFT-CDO-IMPORTANCE'] = '1'
+            # RFC-5545 standard categories (supports both English and Spanish Outlook locale defaults)
+            event_ical.add('categories', ['Yellow category', 'Categoría amarilla', 'Yellow Category'])
+            # Outlook / Exchange color index (6 = Yellow category in Outlook)
+            event_ical['X-MICROSOFT-CDO-ALLDAYEVENT'] = 'FALSE'
             event_ical['X-MICROSOFT-CDO-BUSYSTATUS'] = 'BUSY'
+            event_ical['X-MICROSOFT-CDO-IMPORTANCE'] = '1'
+            # Outlook 2016/2019/365 specific category color tag
+            event_ical['X-OUTLOOK-COLOR'] = '6'
+            # Modern Calendar CSS / Hex color hint (Yellow #FDD835 / #F1C40F)
+            event_ical['COLOR'] = '#FDD835'
 
             cal.add_component(event_ical)
 

@@ -220,9 +220,13 @@ export function UploadWidget() {
                     Puja fitxer
                   </motion.div>
                   
-                  <p className="text-muted-foreground text-sm text-center max-w-[260px]">
+                  <p className="text-muted-foreground text-sm text-center max-w-[260px] mb-3">
                     o arrossega l'arxiu .xlsx aquí
                   </p>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-medium">
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    Color groc d'Outlook inclòs
+                  </div>
                 </div>
               </div>
             ) : (
@@ -278,13 +282,17 @@ export function UploadWidget() {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", bounce: 0.5 }}
-              className="p-4 bg-emerald-500/10 text-emerald-500 rounded-full"
+              className="p-4 bg-amber-500/15 text-amber-500 rounded-full ring-8 ring-amber-500/10"
             >
               <CheckCircle2 className="w-12 h-12" />
             </motion.div>
-            <div>
-              <h3 className="text-2xl font-bold mb-2">Calendari generat!</h3>
-              <p className="text-muted-foreground text-sm">Ja el tens descarregat. Ara a curar pacients i a prendre un bon cafè, que t'ho mereixes! ☕💪</p>
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-semibold mb-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-sm animate-pulse" />
+                Categoria groga d'Outlook activada
+              </div>
+              <h3 className="text-2xl font-bold">Calendari generat!</h3>
+              <p className="text-muted-foreground text-sm max-w-sm">Ja el tens descarregat amb la <strong>categoria groga</strong> configurada per a Outlook. Ara a curar pacients i a prendre un bon cafè! ☕💪</p>
             </div>
             
             <motion.button

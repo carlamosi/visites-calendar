@@ -46,6 +46,10 @@ def test_generate_calendar_valid_file():
     assert "SUMMARY:Basal - EstudioMock - 101" in response.text
     assert "SUMMARY:Week 1 - EstudioMock - 101" in response.text
     assert "SUMMARY:Basal - EstudioMock - 102" in response.text
+    assert "CATEGORIES" in response.text
+    assert "Yellow category" in response.text or "Yellow Category" in response.text
+    assert "X-OUTLOOK-COLOR:6" in response.text
+    assert "COLOR:#FDD835" in response.text
 
 def test_generate_calendar_invalid_extension():
     response = client.post(

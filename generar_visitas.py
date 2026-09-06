@@ -52,6 +52,8 @@ def generar_calendario(ruta_excel, ruta_salida):
     cal = Calendar()
     cal.add('prodid', '-//Visitas Pacientes//ES')
     cal.add('version', '2.0')
+    # Outlook extension: enable category colours
+    cal.add('X-MICROSOFT-CALSCALE', 'Gregorian')
 
     total_eventos = 0
 
@@ -99,6 +101,13 @@ def generar_calendario(ruta_excel, ruta_salida):
                 event.add('dtend', dtend)
                 event.add('dtstamp', datetime.now())
                 event.add('uid', f"{estudio}-{num_paciente}-{fila}-{uuid.uuid4()}@visitas-pacientes")
+                # Outlook yellow category & colour index (6 = Yellow)
+                event.add('categories', ['Yellow category', 'Categoría amarilla', 'Yellow Category'])
+                event['X-MICROSOFT-CDO-ALLDAYEVENT'] = 'FALSE'
+                event['X-MICROSOFT-CDO-BUSYSTATUS'] = 'BUSY'
+                event['X-MICROSOFT-CDO-IMPORTANCE'] = '1'
+                event['X-OUTLOOK-COLOR'] = '6'
+                event['COLOR'] = '#FDD835'
                 cal.add_component(event)
                 total_eventos += 1
 
